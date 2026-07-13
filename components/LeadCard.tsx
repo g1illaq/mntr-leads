@@ -11,11 +11,9 @@ export function LeadCard({
 }: {
   lead: Lead & { payments: Payment[] };
 }) {
-  const paidInLeadCurrency = lead.payments
-    .filter((p) => p.currency === lead.currency)
-    .reduce((sum, p) => sum + p.amount, 0);
+  const totalPaid = lead.payments.reduce((sum, p) => sum + p.amount, 0);
   const paidFraction =
-    lead.amount > 0 ? Math.min(paidInLeadCurrency / lead.amount, 1) : 0;
+    lead.amount > 0 ? Math.min(totalPaid / lead.amount, 1) : 0;
   const initial = lead.clientName.trim().charAt(0).toUpperCase() || "?";
 
   return (
@@ -48,7 +46,7 @@ export function LeadCard({
           <div className="text-xl font-bold tabular-nums text-foreground">
             {formatMoney(lead.amount, lead.currency)}
           </div>
-          {paidInLeadCurrency > 0 && (
+          {totalPaid > 0 && (
             <div className="mt-1.5 w-28">
               <div className="h-1.5 overflow-hidden rounded-full bg-black/10 dark:bg-white/10">
                 <div
@@ -57,7 +55,7 @@ export function LeadCard({
                 />
               </div>
               <div className="mt-0.5 text-[11px] text-ink-secondary">
-                {formatMoney(paidInLeadCurrency, lead.currency)} из{" "}
+                {formatMoney(totalPaid, lead.currency)} из{" "}
                 {formatMoney(lead.amount, lead.currency)}
               </div>
             </div>

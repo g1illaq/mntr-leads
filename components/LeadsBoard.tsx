@@ -89,11 +89,9 @@ export function LeadsBoard({ leads }: { leads: LeadWithPayments[] }) {
     sorted
       .filter((l) => l.status !== "REJECTED")
       .map((l) => {
-        const paidInLeadCurrency = l.payments
-          .filter((p) => p.currency === l.currency)
-          .reduce((sum, p) => sum + p.amount, 0);
+        const totalPaid = l.payments.reduce((sum, p) => sum + p.amount, 0);
         return {
-          amount: Math.max(l.amount - paidInLeadCurrency, 0),
+          amount: Math.max(l.amount - totalPaid, 0),
           currency: l.currency,
         };
       }),

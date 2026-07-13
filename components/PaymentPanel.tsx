@@ -14,16 +14,14 @@ export function PaymentPanel({
   currency: Currency;
   payments: Payment[];
 }) {
-  const paidInLeadCurrency = payments
-    .filter((p) => p.currency === currency)
-    .reduce((sum, p) => sum + p.amount, 0);
-  const remaining = Math.max(amount - paidInLeadCurrency, 0);
+  const totalPaid = payments.reduce((sum, p) => sum + p.amount, 0);
+  const remaining = Math.max(amount - totalPaid, 0);
 
   return (
     <div className="space-y-4 border-t border-black/10 bg-background/50 p-4 dark:border-white/10">
       <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-sm">
         <span className="text-ink-secondary">
-          Оплачено: <span className="font-medium text-foreground">{formatMoney(paidInLeadCurrency, currency)}</span>
+          Оплачено: <span className="font-medium text-foreground">{formatMoney(totalPaid, currency)}</span>
         </span>
         <span className="text-ink-secondary">
           Остаток: <span className="font-medium text-foreground">{formatMoney(remaining, currency)}</span>

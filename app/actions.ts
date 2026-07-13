@@ -107,14 +107,11 @@ export async function addPayment(formData: FormData) {
     data: { leadId, amount, currency, note },
   });
 
-  const paidInLeadCurrency =
-    lead.payments
-      .filter((p) => p.currency === lead.currency)
-      .reduce((sum, p) => sum + p.amount, 0) +
-    (currency === lead.currency ? amount : 0);
+  const totalPaid =
+    lead.payments.reduce((sum, p) => sum + p.amount, 0) + amount;
 
   const nextStatus: LeadStatus =
-    paidInLeadCurrency >= lead.amount ? "PAID" : "PARTIALLY_PAID";
+    totalPaid >= lead.amount ? "PAID" : "PARTIALLY_PAID";
 
   if (lead.status !== "REJECTED") {
     await prisma.lead.update({
@@ -135,15 +132,13 @@ export async function deletePayment(paymentId: string) {
   await prisma.payment.delete({ where: { id: paymentId } });
 
   const remaining = payment.lead.payments.filter((p) => p.id !== paymentId);
-  const paidInLeadCurrency = remaining
-    .filter((p) => p.currency === payment.lead.currency)
-    .reduce((sum, p) => sum + p.amount, 0);
+  const totalPaid = remaining.reduce((sum, p) => sum + p.amount, 0);
 
   if (payment.lead.status !== "REJECTED") {
     const nextStatus: LeadStatus =
-      paidInLeadCurrency <= 0
+      totalPaid <= 0
         ? "CONTACTED"
-        : paidInLeadCurrency >= payment.lead.amount
+        : totalPaid >= payment.lead.amount
           ? "PAID"
           : "PARTIALLY_PAID";
     await prisma.lead.update({
