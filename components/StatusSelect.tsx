@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { setLeadStatus } from "@/app/actions";
 import type { LeadStatus } from "@/lib/generated/prisma";
 
@@ -41,18 +41,23 @@ export function StatusSelect({
 }) {
   const action = setLeadStatus.bind(null, leadId);
   const reasonRef = useRef<HTMLInputElement>(null);
+  const [value, setValue] = useState(status);
+
+  useEffect(() => {
+    setValue(status);
+  }, [status]);
 
   function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    const select = e.currentTarget;
-    if (select.value === "REJECTED") {
+    const nextStatus = e.currentTarget.value as LeadStatus;
+    if (nextStatus === "REJECTED") {
       const reason = window.prompt("Причина отказа:", rejectionReason ?? "");
       if (!reason || !reason.trim()) {
-        select.value = status;
         return;
       }
       if (reasonRef.current) reasonRef.current.value = reason.trim();
     }
-    select.form?.requestSubmit();
+    setValue(nextStatus);
+    e.currentTarget.form?.requestSubmit();
   }
 
   return (
@@ -60,9 +65,9 @@ export function StatusSelect({
       <input type="hidden" name="rejectionReason" ref={reasonRef} />
       <select
         name="status"
-        defaultValue={status}
+        value={value}
         onChange={handleChange}
-        className={`cursor-pointer rounded-full border px-2.5 py-1 text-xs font-medium ${STATUS_COLORS[status]}`}
+        className={`cursor-pointer rounded-full border px-2.5 py-1 text-xs font-medium ${STATUS_COLORS[value]}`}
       >
         {(Object.entries(STATUS_LABELS) as [LeadStatus, string][]).map(
           ([value, label]) => (
