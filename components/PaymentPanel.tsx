@@ -1,6 +1,7 @@
 import { addPayment, deletePayment } from "@/app/actions";
 import { ConfirmSubmitButton } from "@/components/ConfirmSubmitButton";
 import { formatDateTime, formatMoney } from "@/lib/format";
+import { convert } from "@/lib/currency";
 import type { Currency, Payment } from "@/lib/generated/prisma";
 
 export function PaymentPanel({
@@ -14,7 +15,10 @@ export function PaymentPanel({
   currency: Currency;
   payments: Payment[];
 }) {
-  const totalPaid = payments.reduce((sum, p) => sum + p.amount, 0);
+  const totalPaid = payments.reduce(
+    (sum, p) => sum + convert(p.amount, p.currency, currency),
+    0,
+  );
   const remaining = Math.max(amount - totalPaid, 0);
 
   return (

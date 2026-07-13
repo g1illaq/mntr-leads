@@ -5,7 +5,8 @@ import { LeadCard } from "@/components/LeadCard";
 import { StatTile } from "@/components/StatTile";
 import { SummaryTile } from "@/components/SummaryTile";
 import { formatMoney } from "@/lib/format";
-import type { Currency, Lead, LeadStatus, Payment } from "@/lib/generated/prisma";
+import { convert } from "@/lib/currency";
+import type { Lead, LeadStatus, Payment } from "@/lib/generated/prisma";
 
 type LeadWithPayments = Lead & { payments: Payment[] };
 
@@ -27,21 +28,6 @@ const STATUS_PRIORITY: Record<LeadStatus, number> = {
   NEXT_COHORT: 5,
   REJECTED: 6,
 };
-
-function sumByCurrency(entries: { amount: number; currency: Currency }[]) {
-  const sums: Partial<Record<Currency, number>> = {};
-  for (const entry of entries) {
-    sums[entry.currency] = (sums[entry.currency] ?? 0) + entry.amount;
-  }
-  return sums;
-}
-
-function formatSums(sums: Partial<Record<Currency, number>>) {
-  const parts = (Object.entries(sums) as [Currency, number][])
-    .filter(([, amount]) => amount > 0)
-    .map(([currency, amount]) => formatMoney(amount, currency));
-  return parts.length > 0 ? parts.join(" + ") : "—";
-}
 
 function matchesQuery(lead: LeadWithPayments, query: string) {
   const haystack = [
@@ -82,20 +68,22 @@ export function LeadsBoard({ leads }: { leads: LeadWithPayments[] }) {
   const nextCohort = sorted.filter((l) => l.status === "NEXT_COHORT");
   const rejected = sorted.filter((l) => l.status === "REJECTED");
 
-  const receivedSums = sumByCurrency(
-    sorted.flatMap((l) => l.payments.map((p) => ({ amount: p.amount, currency: p.currency }))),
+  const totalReceived = sorted.reduce(
+    (sum, l) =>
+      sum +
+      l.payments.reduce((s, p) => s + convert(p.amount, p.currency, "RUB"), 0),
+    0,
   );
-  const outstandingSums = sumByCurrency(
-    sorted
-      .filter((l) => l.status !== "REJECTED")
-      .map((l) => {
-        const totalPaid = l.payments.reduce((sum, p) => sum + p.amount, 0);
-        return {
-          amount: Math.max(l.amount - totalPaid, 0),
-          currency: l.currency,
-        };
-      }),
-  );
+  const totalOutstanding = sorted
+    .filter((l) => l.status !== "REJECTED")
+    .reduce((sum, l) => {
+      const totalPaid = l.payments.reduce(
+        (s, p) => s + convert(p.amount, p.currency, l.currency),
+        0,
+      );
+      const remaining = Math.max(l.amount - totalPaid, 0);
+      return sum + convert(remaining, l.currency, "RUB");
+    }, 0);
 
   const byFilter =
     filter === "NO_CONTACT"
@@ -134,12 +122,12 @@ export function LeadsBoard({ leads }: { leads: LeadWithPayments[] }) {
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <SummaryTile
           label="Оплачено всего"
-          value={formatSums(receivedSums)}
+          value={formatMoney(totalReceived, "RUB")}
           tone="good"
         />
         <SummaryTile
           label="Не оплачено всего"
-          value={formatSums(outstandingSums)}
+          value={formatMoney(totalOutstanding, "RUB")}
           tone="warning"
         />
       </div>

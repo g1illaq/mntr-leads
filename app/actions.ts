@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { convert } from "@/lib/currency";
 import type { Currency, LeadStatus } from "@/lib/generated/prisma";
 
 const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
@@ -108,7 +109,10 @@ export async function addPayment(formData: FormData) {
   });
 
   const totalPaid =
-    lead.payments.reduce((sum, p) => sum + p.amount, 0) + amount;
+    lead.payments.reduce(
+      (sum, p) => sum + convert(p.amount, p.currency, lead.currency),
+      0,
+    ) + convert(amount, currency, lead.currency);
 
   const nextStatus: LeadStatus =
     totalPaid >= lead.amount ? "PAID" : "PARTIALLY_PAID";
@@ -132,7 +136,10 @@ export async function deletePayment(paymentId: string) {
   await prisma.payment.delete({ where: { id: paymentId } });
 
   const remaining = payment.lead.payments.filter((p) => p.id !== paymentId);
-  const totalPaid = remaining.reduce((sum, p) => sum + p.amount, 0);
+  const totalPaid = remaining.reduce(
+    (sum, p) => sum + convert(p.amount, p.currency, payment.lead.currency),
+    0,
+  );
 
   if (payment.lead.status !== "REJECTED") {
     const nextStatus: LeadStatus =

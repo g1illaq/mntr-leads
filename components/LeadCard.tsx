@@ -4,6 +4,7 @@ import { DeadlineBadge } from "@/components/DeadlineBadge";
 import { PaymentPanel } from "@/components/PaymentPanel";
 import { StatusSelect } from "@/components/StatusSelect";
 import { formatMoney, toDatetimeLocalValue } from "@/lib/format";
+import { convert } from "@/lib/currency";
 import type { Lead, Payment } from "@/lib/generated/prisma";
 
 export function LeadCard({
@@ -11,7 +12,10 @@ export function LeadCard({
 }: {
   lead: Lead & { payments: Payment[] };
 }) {
-  const totalPaid = lead.payments.reduce((sum, p) => sum + p.amount, 0);
+  const totalPaid = lead.payments.reduce(
+    (sum, p) => sum + convert(p.amount, p.currency, lead.currency),
+    0,
+  );
   const paidFraction =
     lead.amount > 0 ? Math.min(totalPaid / lead.amount, 1) : 0;
   const initial = lead.clientName.trim().charAt(0).toUpperCase() || "?";
