@@ -9,7 +9,7 @@ export default async function Home() {
   });
 
   return (
-    <main className="mx-auto max-w-5xl space-y-6 p-6">
+    <main className="mx-auto max-w-7xl space-y-6 p-6">
       <header className="flex items-center gap-4">
         <Logo />
         <div>

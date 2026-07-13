@@ -94,7 +94,7 @@ export function LeadsBoard({ leads }: { leads: LeadWithPayments[] }) {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
         <StatTile
           label="Всего заявок"
           value={String(sorted.length)}
@@ -146,18 +146,19 @@ export function LeadsBoard({ leads }: { leads: LeadWithPayments[] }) {
         />
       </div>
 
-      <div className="space-y-3">
-        {visible.length === 0 && (
-          <p className="rounded-xl border border-dashed border-black/10 p-8 text-center text-sm text-ink-muted dark:border-white/10">
-            {sorted.length === 0
-              ? "Заявок пока нет — добавьте первую вручную."
-              : "Нет заявок с этим статусом."}
-          </p>
-        )}
-        {visible.map((lead) => (
-          <LeadCard key={lead.id} lead={lead} />
-        ))}
-      </div>
+      {visible.length === 0 ? (
+        <p className="rounded-xl border border-dashed border-black/10 p-8 text-center text-sm text-ink-muted dark:border-white/10">
+          {sorted.length === 0
+            ? "Заявок пока нет — добавьте первую вручную."
+            : "Нет заявок с этим статусом."}
+        </p>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {visible.map((lead) => (
+            <LeadCard key={lead.id} lead={lead} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
