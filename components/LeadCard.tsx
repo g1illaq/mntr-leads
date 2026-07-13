@@ -1,6 +1,7 @@
 import { deleteLead, updateLeadCreatedAt } from "@/app/actions";
 import { ConfirmSubmitButton } from "@/components/ConfirmSubmitButton";
 import { DeadlineBadge } from "@/components/DeadlineBadge";
+import { NextPaymentField } from "@/components/NextPaymentField";
 import { PaymentPanel } from "@/components/PaymentPanel";
 import { StatusSelect } from "@/components/StatusSelect";
 import { formatMoney, toDatetimeLocalValue } from "@/lib/format";
@@ -21,7 +22,10 @@ export function LeadCard({
   const initial = lead.clientName.trim().charAt(0).toUpperCase() || "?";
 
   return (
-    <div className="flex h-full flex-col rounded-2xl border border-black/10 bg-surface shadow-sm dark:border-white/10">
+    <div
+      id={`lead-${lead.id}`}
+      className="lead-card flex h-full scroll-mt-4 flex-col rounded-2xl border border-black/10 bg-surface shadow-sm dark:border-white/10"
+    >
       <div className="flex items-center gap-3 p-4">
         <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-black/5 text-sm font-semibold text-foreground dark:bg-white/10">
           {initial}
@@ -78,6 +82,18 @@ export function LeadCard({
         </span>
         <DeadlineBadge deadline={lead.offerDeadline?.toISOString() ?? null} />
       </div>
+
+      {lead.status === "PARTIALLY_PAID" && (
+        <div className="flex items-center justify-between gap-3 border-t border-black/10 px-4 py-2.5 dark:border-white/10">
+          <span className="text-[11px] uppercase tracking-wide text-ink-muted">
+            Следующий платёж
+          </span>
+          <NextPaymentField
+            leadId={lead.id}
+            nextPaymentDueAt={lead.nextPaymentDueAt}
+          />
+        </div>
+      )}
 
       <details className="group mt-auto border-t border-black/10 dark:border-white/10">
         <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-2.5 text-xs font-medium text-ink-secondary hover:text-foreground">

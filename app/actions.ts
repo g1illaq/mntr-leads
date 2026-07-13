@@ -88,6 +88,17 @@ export async function updateLeadCreatedAt(leadId: string, formData: FormData) {
   revalidatePath("/");
 }
 
+export async function updateNextPaymentDueAt(leadId: string, formData: FormData) {
+  const raw = String(formData.get("nextPaymentDueAt") ?? "");
+  const nextPaymentDueAt = raw ? new Date(raw) : null;
+  if (raw && Number.isNaN(nextPaymentDueAt?.getTime())) {
+    throw new Error("Некорректная дата");
+  }
+
+  await prisma.lead.update({ where: { id: leadId }, data: { nextPaymentDueAt } });
+  revalidatePath("/");
+}
+
 export async function deleteLead(leadId: string) {
   await prisma.lead.delete({ where: { id: leadId } });
   revalidatePath("/");
@@ -120,7 +131,10 @@ export async function addPayment(formData: FormData) {
   if (lead.status !== "REJECTED") {
     await prisma.lead.update({
       where: { id: leadId },
-      data: { status: nextStatus },
+      data: {
+        status: nextStatus,
+        nextPaymentDueAt: nextStatus === "PAID" ? null : lead.nextPaymentDueAt,
+      },
     });
   }
 

@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { LeadCard } from "@/components/LeadCard";
 import { StatTile } from "@/components/StatTile";
 import { SummaryTile } from "@/components/SummaryTile";
+import { UpcomingPayments } from "@/components/UpcomingPayments";
 import { formatMoney } from "@/lib/format";
 import { convert } from "@/lib/currency";
 import type { Lead, LeadStatus, Payment } from "@/lib/generated/prisma";
@@ -40,7 +41,14 @@ function matchesQuery(lead: LeadWithPayments, query: string) {
     .filter(Boolean)
     .join(" ")
     .toLowerCase();
-  return haystack.includes(query);
+  if (haystack.includes(query)) return true;
+
+  const queryDigits = query.replace(/\D/g, "");
+  if (queryDigits.length >= 4 && lead.phone) {
+    if (lead.phone.replace(/\D/g, "").includes(queryDigits)) return true;
+  }
+
+  return false;
 }
 
 export function LeadsBoard({ leads }: { leads: LeadWithPayments[] }) {
@@ -52,9 +60,7 @@ export function LeadsBoard({ leads }: { leads: LeadWithPayments[] }) {
       [...leads].sort((a, b) => {
         const byStatus = STATUS_PRIORITY[a.status] - STATUS_PRIORITY[b.status];
         if (byStatus !== 0) return byStatus;
-        const da = a.offerDeadline ? new Date(a.offerDeadline).getTime() : Infinity;
-        const db = b.offerDeadline ? new Date(b.offerDeadline).getTime() : Infinity;
-        return da - db;
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       }),
     [leads],
   );
@@ -102,7 +108,7 @@ export function LeadsBoard({ leads }: { leads: LeadWithPayments[] }) {
 
   const trimmedQuery = query.trim().toLowerCase();
   const visible = trimmedQuery
-    ? byFilter.filter((lead) => matchesQuery(lead, trimmedQuery))
+    ? sorted.filter((lead) => matchesQuery(lead, trimmedQuery))
     : byFilter;
 
   function toggle(key: FilterKey) {
@@ -118,6 +124,8 @@ export function LeadsBoard({ leads }: { leads: LeadWithPayments[] }) {
         placeholder="Поиск по имени, номеру сделки, тарифу, email или телефону…"
         className="w-full rounded-xl border border-black/10 bg-surface px-4 py-2.5 text-sm text-foreground shadow-sm placeholder:text-ink-muted dark:border-white/10"
       />
+
+      <UpcomingPayments leads={sorted} />
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <SummaryTile

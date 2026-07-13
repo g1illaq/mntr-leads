@@ -53,3 +53,11 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.lead-card {
+  transition: box-shadow 0.3s ease;
+}
+
+.lead-card:target {
+  box-shadow: 0 0 0 2px var(--accent);
+}
