@@ -10,11 +10,11 @@ export default async function Home() {
 
   return (
     <main className="mx-auto max-w-5xl space-y-6 p-6">
-      <header className="flex items-center gap-3">
-        <Logo size={40} />
+      <header className="flex items-center gap-4">
+        <Logo />
         <div>
-          <h1 className="text-xl font-semibold leading-none text-foreground">
-            mntr <span className="text-accent">заявки</span>
+          <h1 className="text-sm font-medium uppercase tracking-wide text-ink-muted">
+            Заявки на курс
           </h1>
           <p className="mt-1 text-sm text-ink-secondary">
             Контроль оплат по спецпредложению — никого не терять в течение 3 дней.

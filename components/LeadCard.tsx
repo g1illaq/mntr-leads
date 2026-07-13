@@ -1,6 +1,6 @@
 import { deleteLead } from "@/app/actions";
 import { ConfirmSubmitButton } from "@/components/ConfirmSubmitButton";
-import { DeadlineRing } from "@/components/DeadlineRing";
+import { DeadlineBadge } from "@/components/DeadlineBadge";
 import { PaymentPanel } from "@/components/PaymentPanel";
 import { StatusSelect } from "@/components/StatusSelect";
 import { formatDateTime, formatMoney } from "@/lib/format";
@@ -14,7 +14,11 @@ export function LeadCard({
   return (
     <details className="group rounded-xl border border-black/10 bg-surface shadow-sm dark:border-white/10">
       <summary className="grid cursor-pointer list-none grid-cols-1 gap-2 p-4 sm:grid-cols-[auto_1fr_auto_auto_auto_auto] sm:items-center sm:gap-4">
-        <StatusSelect leadId={lead.id} status={lead.status} />
+        <StatusSelect
+          leadId={lead.id}
+          status={lead.status}
+          rejectionReason={lead.rejectionReason}
+        />
 
         <div className="min-w-0">
           <div className="truncate font-medium text-foreground">
@@ -26,6 +30,11 @@ export function LeadCard({
           <div className="truncate text-xs text-ink-muted">
             {[lead.email, lead.phone].filter(Boolean).join(" · ") || "—"}
           </div>
+          {lead.status === "REJECTED" && lead.rejectionReason && (
+            <div className="truncate text-xs text-status-critical">
+              Причина: {lead.rejectionReason}
+            </div>
+          )}
         </div>
 
         <div className="text-sm font-medium tabular-nums text-foreground">
@@ -36,10 +45,7 @@ export function LeadCard({
           <span className="text-[11px] uppercase tracking-wide text-ink-muted">
             спецпредложение
           </span>
-          <DeadlineRing
-            createdAt={lead.createdAt.toISOString()}
-            deadline={lead.offerDeadline?.toISOString() ?? null}
-          />
+          <DeadlineBadge deadline={lead.offerDeadline?.toISOString() ?? null} />
         </div>
 
         <form action={deleteLead.bind(null, lead.id)}>

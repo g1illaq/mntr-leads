@@ -50,7 +50,19 @@ export async function createLead(formData: FormData) {
 
 export async function setLeadStatus(leadId: string, formData: FormData) {
   const status = String(formData.get("status")) as LeadStatus;
-  await prisma.lead.update({ where: { id: leadId }, data: { status } });
+  const rejectionReason = String(formData.get("rejectionReason") ?? "").trim();
+
+  if (status === "REJECTED" && !rejectionReason) {
+    throw new Error("Нужно указать причину отказа");
+  }
+
+  await prisma.lead.update({
+    where: { id: leadId },
+    data: {
+      status,
+      rejectionReason: status === "REJECTED" ? rejectionReason : null,
+    },
+  });
   revalidatePath("/");
 }
 

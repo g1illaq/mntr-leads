@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { setLeadStatus } from "@/app/actions";
 import type { LeadStatus } from "@/lib/generated/prisma";
 
@@ -32,17 +33,35 @@ export function statusBadgeClass(status: LeadStatus) {
 export function StatusSelect({
   leadId,
   status,
+  rejectionReason,
 }: {
   leadId: string;
   status: LeadStatus;
+  rejectionReason?: string | null;
 }) {
   const action = setLeadStatus.bind(null, leadId);
+  const reasonRef = useRef<HTMLInputElement>(null);
+
+  function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    const select = e.currentTarget;
+    if (select.value === "REJECTED") {
+      const reason = window.prompt("Причина отказа:", rejectionReason ?? "");
+      if (!reason || !reason.trim()) {
+        select.value = status;
+        return;
+      }
+      if (reasonRef.current) reasonRef.current.value = reason.trim();
+    }
+    select.form?.requestSubmit();
+  }
+
   return (
     <form action={action}>
+      <input type="hidden" name="rejectionReason" ref={reasonRef} />
       <select
         name="status"
         defaultValue={status}
-        onChange={(e) => e.currentTarget.form?.requestSubmit()}
+        onChange={handleChange}
         className={`cursor-pointer rounded-full border px-2.5 py-1 text-xs font-medium ${STATUS_COLORS[status]}`}
       >
         {(Object.entries(STATUS_LABELS) as [LeadStatus, string][]).map(
