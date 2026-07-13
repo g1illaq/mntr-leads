@@ -1,6 +1,6 @@
 import { deleteLead } from "@/app/actions";
 import { ConfirmSubmitButton } from "@/components/ConfirmSubmitButton";
-import { DeadlineTimer } from "@/components/DeadlineTimer";
+import { DeadlineRing } from "@/components/DeadlineRing";
 import { PaymentPanel } from "@/components/PaymentPanel";
 import { StatusSelect } from "@/components/StatusSelect";
 import { formatDateTime, formatMoney } from "@/lib/format";
@@ -36,7 +36,10 @@ export function LeadCard({
           <span className="text-[11px] uppercase tracking-wide text-ink-muted">
             спецпредложение
           </span>
-          <DeadlineTimer deadline={lead.offerDeadline?.toISOString() ?? null} />
+          <DeadlineRing
+            createdAt={lead.createdAt.toISOString()}
+            deadline={lead.offerDeadline?.toISOString() ?? null}
+          />
         </div>
 
         <form action={deleteLead.bind(null, lead.id)}>
