@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum Currency {
+  RUB
+  USD
+}
+
+enum LeadStatus {
+  NEW
+  NO_CONTACT
+  CONTACTED
+  PARTIALLY_PAID
+  PAID
+  REJECTED
+}
+
+model Lead {
+  id            String     @id @default(cuid())
+  clientName    String
+  email         String?
+  phone         String?
+  product       String
+  amount        Float
+  currency      Currency   @default(RUB)
+  status        LeadStatus @default(NEW)
+  dealNumber    String?
+  getcourseUrl  String?
+  offerDeadline DateTime?
+  notes         String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  payments      Payment[]
+}
+
+model Payment {
+  id        String   @id @default(cuid())
+  leadId    String
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  amount    Float
+  currency  Currency @default(RUB)
+  paidAt    DateTime @default(now())
+  note      String?
+}
