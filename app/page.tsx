@@ -4,6 +4,8 @@ import { Logo } from "@/components/Logo";
 import { logout } from "@/app/login/actions";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   const leads = await prisma.lead.findMany({
     include: { payments: { orderBy: { paidAt: "desc" } } },
