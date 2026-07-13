@@ -66,6 +66,27 @@ export async function setLeadStatus(leadId: string, formData: FormData) {
   revalidatePath("/");
 }
 
+export async function updateLeadCreatedAt(leadId: string, formData: FormData) {
+  const raw = String(formData.get("createdAt") ?? "");
+  const newCreatedAt = new Date(raw);
+  if (Number.isNaN(newCreatedAt.getTime())) {
+    throw new Error("Некорректная дата");
+  }
+
+  const lead = await prisma.lead.findUniqueOrThrow({ where: { id: leadId } });
+
+  const data: { createdAt: Date; offerDeadline?: Date } = {
+    createdAt: newCreatedAt,
+  };
+  if (lead.offerDeadline) {
+    const durationMs = lead.offerDeadline.getTime() - lead.createdAt.getTime();
+    data.offerDeadline = new Date(newCreatedAt.getTime() + durationMs);
+  }
+
+  await prisma.lead.update({ where: { id: leadId }, data });
+  revalidatePath("/");
+}
+
 export async function deleteLead(leadId: string) {
   await prisma.lead.delete({ where: { id: leadId } });
   revalidatePath("/");

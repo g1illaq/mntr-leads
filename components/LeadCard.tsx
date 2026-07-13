@@ -1,9 +1,9 @@
-import { deleteLead } from "@/app/actions";
+import { deleteLead, updateLeadCreatedAt } from "@/app/actions";
 import { ConfirmSubmitButton } from "@/components/ConfirmSubmitButton";
 import { DeadlineBadge } from "@/components/DeadlineBadge";
 import { PaymentPanel } from "@/components/PaymentPanel";
 import { StatusSelect } from "@/components/StatusSelect";
-import { formatDateTime, formatMoney } from "@/lib/format";
+import { formatMoney, toDatetimeLocalValue } from "@/lib/format";
 import type { Lead, Payment } from "@/lib/generated/prisma";
 
 export function LeadCard({
@@ -96,19 +96,32 @@ export function LeadCard({
             {[lead.email, lead.phone].filter(Boolean).join(" · ") ||
               "Без контактов"}
           </div>
-          <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-ink-secondary">
-            <span>Создано: {formatDateTime(lead.createdAt)}</span>
-            {lead.getcourseUrl && (
-              <a
-                href={lead.getcourseUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="text-accent hover:underline"
-              >
-                открыть в GetCourse
-              </a>
-            )}
-          </div>
+          <form
+            action={updateLeadCreatedAt.bind(null, lead.id)}
+            className="flex flex-wrap items-center gap-2 text-xs text-ink-secondary"
+          >
+            <label htmlFor={`createdAt-${lead.id}`}>Создано:</label>
+            <input
+              id={`createdAt-${lead.id}`}
+              type="datetime-local"
+              name="createdAt"
+              defaultValue={toDatetimeLocalValue(lead.createdAt)}
+              className="rounded-md border border-black/10 bg-surface px-2 py-1 text-xs text-foreground dark:border-white/10"
+            />
+            <button type="submit" className="text-accent hover:underline">
+              Сохранить
+            </button>
+          </form>
+          {lead.getcourseUrl && (
+            <a
+              href={lead.getcourseUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-block text-xs text-accent hover:underline"
+            >
+              открыть в GetCourse
+            </a>
+          )}
 
           {lead.notes && (
             <p className="rounded-md bg-background/60 p-2 text-sm text-ink-secondary">
