@@ -9,6 +9,7 @@
   --gridline: #e1e0d9;
   --accent: #2a78d6;
   --cat-aqua: #1baf7a;
+  --cat-violet: #4a3aa7;
   --status-good: #0ca30c;
   --status-warning: #fab219;
   --status-serious: #ec835a;
@@ -24,6 +25,7 @@
   --color-gridline: var(--gridline);
   --color-accent: var(--accent);
   --color-cat-aqua: var(--cat-aqua);
+  --color-cat-violet: var(--cat-violet);
   --color-status-good: var(--status-good);
   --color-status-warning: var(--status-warning);
   --color-status-serious: var(--status-serious);
@@ -42,6 +44,7 @@
     --gridline: #2c2c2a;
     --accent: #3987e5;
     --cat-aqua: #199e70;
+    --cat-violet: #9085e9;
   }
 }
 

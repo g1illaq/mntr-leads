@@ -9,6 +9,7 @@ export const STATUS_LABELS: Record<LeadStatus, string> = {
   CONTACTED: "Контакт установлен",
   PARTIALLY_PAID: "Оплата частями",
   PAID: "Оплачено",
+  NEXT_COHORT: "Перенос на следующий поток",
   REJECTED: "Отказ",
 };
 
@@ -19,6 +20,7 @@ const STATUS_COLORS: Record<LeadStatus, string> = {
   CONTACTED: "bg-cat-aqua/15 text-cat-aqua border-cat-aqua/40",
   PARTIALLY_PAID: "bg-accent/15 text-accent border-accent/40",
   PAID: "bg-status-good/15 text-status-good border-status-good/40",
+  NEXT_COHORT: "bg-cat-violet/15 text-cat-violet border-cat-violet/40",
   REJECTED:
     "bg-status-critical/15 text-status-critical border-status-critical/40",
 };

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatShortDateTime } from "@/lib/format";
 
 function formatRemaining(ms: number) {
   if (ms <= 0) return "Истёк";
@@ -29,18 +30,25 @@ export function DeadlineTimer({ deadline }: { deadline: string | null }) {
   const remaining = new Date(deadline).getTime() - now;
   const hoursLeft = remaining / 3_600_000;
 
-  const tone =
+  const pillClass =
     remaining <= 0
-      ? "text-ink-muted"
+      ? "bg-ink-muted/10 text-ink-muted border-ink-muted/30"
       : hoursLeft < 6
-        ? "text-status-critical"
+        ? "bg-status-critical/15 text-status-critical border-status-critical/40"
         : hoursLeft < 24
-          ? "text-status-warning"
-          : "text-ink-secondary";
+          ? "bg-status-warning/15 text-status-warning border-status-warning/40"
+          : "bg-black/5 text-ink-secondary border-black/10 dark:bg-white/5 dark:border-white/10";
 
   return (
-    <span className={`text-sm font-medium tabular-nums ${tone}`}>
-      {formatRemaining(remaining)}
-    </span>
+    <div className="flex flex-col gap-1">
+      <span
+        className={`inline-block w-fit rounded-full border px-2 py-0.5 text-xs font-semibold tabular-nums ${pillClass}`}
+      >
+        {formatRemaining(remaining)}
+      </span>
+      <span className="text-xs text-ink-secondary">
+        до {formatShortDateTime(deadline)}
+      </span>
+    </div>
   );
 }

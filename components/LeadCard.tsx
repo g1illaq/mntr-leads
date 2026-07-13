@@ -3,7 +3,7 @@ import { ConfirmSubmitButton } from "@/components/ConfirmSubmitButton";
 import { DeadlineTimer } from "@/components/DeadlineTimer";
 import { PaymentPanel } from "@/components/PaymentPanel";
 import { StatusSelect } from "@/components/StatusSelect";
-import { formatDateTime, formatMoney, formatShortDateTime } from "@/lib/format";
+import { formatDateTime, formatMoney } from "@/lib/format";
 import type { Lead, Payment } from "@/lib/generated/prisma";
 
 export function LeadCard({
@@ -32,16 +32,11 @@ export function LeadCard({
           {formatMoney(lead.amount, lead.currency)}
         </div>
 
-        <div className="flex flex-col">
+        <div className="flex flex-col gap-0.5">
           <span className="text-[11px] uppercase tracking-wide text-ink-muted">
             спецпредложение
           </span>
           <DeadlineTimer deadline={lead.offerDeadline?.toISOString() ?? null} />
-          {lead.offerDeadline && (
-            <span className="text-[11px] text-ink-muted">
-              {formatShortDateTime(lead.createdAt)} → {formatShortDateTime(lead.offerDeadline)}
-            </span>
-          )}
         </div>
 
         <form action={deleteLead.bind(null, lead.id)}>

@@ -14,6 +14,7 @@ type FilterKey =
   | "UNPAID"
   | "PARTIALLY_PAID"
   | "PAID"
+  | "NEXT_COHORT"
   | "REJECTED";
 
 const STATUS_PRIORITY: Record<LeadStatus, number> = {
@@ -22,7 +23,8 @@ const STATUS_PRIORITY: Record<LeadStatus, number> = {
   CONTACTED: 2,
   PARTIALLY_PAID: 3,
   PAID: 4,
-  REJECTED: 5,
+  NEXT_COHORT: 5,
+  REJECTED: 6,
 };
 
 function sumByCurrency(entries: { amount: number; currency: Currency }[]) {
@@ -61,6 +63,7 @@ export function LeadsBoard({ leads }: { leads: LeadWithPayments[] }) {
   const noContact = sorted.filter((l) => l.status === "NO_CONTACT");
   const partial = sorted.filter((l) => l.status === "PARTIALLY_PAID");
   const paid = sorted.filter((l) => l.status === "PAID");
+  const nextCohort = sorted.filter((l) => l.status === "NEXT_COHORT");
   const rejected = sorted.filter((l) => l.status === "REJECTED");
 
   const atRiskSums = sumByCurrency(
@@ -79,9 +82,11 @@ export function LeadsBoard({ leads }: { leads: LeadWithPayments[] }) {
           ? partial
           : filter === "PAID"
             ? paid
-            : filter === "REJECTED"
-              ? rejected
-              : sorted;
+            : filter === "NEXT_COHORT"
+              ? nextCohort
+              : filter === "REJECTED"
+                ? rejected
+                : sorted;
 
   function toggle(key: FilterKey) {
     setFilter((current) => (current === key ? "ALL" : key));
@@ -89,7 +94,7 @@ export function LeadsBoard({ leads }: { leads: LeadWithPayments[] }) {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         <StatTile
           label="Всего заявок"
           value={String(sorted.length)}
@@ -125,6 +130,12 @@ export function LeadsBoard({ leads }: { leads: LeadWithPayments[] }) {
           tone="good"
           active={filter === "PAID"}
           onClick={() => toggle("PAID")}
+        />
+        <StatTile
+          label="Перенос на след. поток"
+          value={String(nextCohort.length)}
+          active={filter === "NEXT_COHORT"}
+          onClick={() => toggle("NEXT_COHORT")}
         />
         <StatTile
           label="Отказ"
