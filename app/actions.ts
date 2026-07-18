@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { convert } from "@/lib/currency";
-import type { Currency, LeadStatus } from "@/lib/generated/prisma";
+import type { Currency, LeadStatus, Manager } from "@/lib/generated/prisma";
 
 const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
 
@@ -30,6 +30,8 @@ export async function createLead(formData: FormData) {
   const getcourseUrl = String(formData.get("getcourseUrl") ?? "").trim() || null;
   const notes = String(formData.get("notes") ?? "").trim() || null;
   const noDeadline = formData.get("noDeadline") === "on";
+  const managerRaw = String(formData.get("manager") ?? "").trim();
+  const manager = (managerRaw || null) as Manager | null;
 
   await prisma.lead.create({
     data: {
@@ -42,6 +44,7 @@ export async function createLead(formData: FormData) {
       dealNumber,
       getcourseUrl,
       notes,
+      manager,
       offerDeadline: noDeadline ? null : new Date(Date.now() + THREE_DAYS_MS),
     },
   });
@@ -96,6 +99,14 @@ export async function updateNextPaymentDueAt(leadId: string, formData: FormData)
   }
 
   await prisma.lead.update({ where: { id: leadId }, data: { nextPaymentDueAt } });
+  revalidatePath("/");
+}
+
+export async function updateLeadManager(leadId: string, formData: FormData) {
+  const raw = String(formData.get("manager") ?? "").trim();
+  const manager = (raw || null) as Manager | null;
+
+  await prisma.lead.update({ where: { id: leadId }, data: { manager } });
   revalidatePath("/");
 }
 

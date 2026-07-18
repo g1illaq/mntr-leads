@@ -1,6 +1,7 @@
 import { deleteLead, updateLeadCreatedAt } from "@/app/actions";
 import { ConfirmSubmitButton } from "@/components/ConfirmSubmitButton";
 import { DeadlineBadge } from "@/components/DeadlineBadge";
+import { ManagerSelect } from "@/components/ManagerSelect";
 import { NextPaymentField } from "@/components/NextPaymentField";
 import { PaymentPanel } from "@/components/PaymentPanel";
 import { StatusSelect } from "@/components/StatusSelect";
@@ -81,6 +82,13 @@ export function LeadCard({
           Спецпредложение
         </span>
         <DeadlineBadge deadline={lead.offerDeadline?.toISOString() ?? null} />
+      </div>
+
+      <div className="flex items-center justify-between gap-3 border-t border-black/10 px-4 py-2.5 dark:border-white/10">
+        <span className="text-[11px] uppercase tracking-wide text-ink-muted">
+          Менеджер
+        </span>
+        <ManagerSelect leadId={lead.id} manager={lead.manager} />
       </div>
 
       {lead.status === "PARTIALLY_PAID" && (

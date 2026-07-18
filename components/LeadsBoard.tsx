@@ -2,12 +2,13 @@
 
 import { useMemo, useState } from "react";
 import { LeadCard } from "@/components/LeadCard";
+import { MANAGER_LABELS } from "@/components/ManagerSelect";
 import { StatTile } from "@/components/StatTile";
 import { SummaryTile } from "@/components/SummaryTile";
 import { UpcomingPayments } from "@/components/UpcomingPayments";
 import { formatMoney } from "@/lib/format";
 import { convert } from "@/lib/currency";
-import type { Lead, LeadStatus, Payment } from "@/lib/generated/prisma";
+import type { Lead, LeadStatus, Manager, Payment } from "@/lib/generated/prisma";
 
 type LeadWithPayments = Lead & { payments: Payment[] };
 
@@ -53,6 +54,7 @@ function matchesQuery(lead: LeadWithPayments, query: string) {
 
 export function LeadsBoard({ leads }: { leads: LeadWithPayments[] }) {
   const [filter, setFilter] = useState<FilterKey>("ALL");
+  const [managerFilter, setManagerFilter] = useState<Manager | "ALL">("ALL");
   const [query, setQuery] = useState("");
 
   const sorted = useMemo(
@@ -65,22 +67,27 @@ export function LeadsBoard({ leads }: { leads: LeadWithPayments[] }) {
     [leads],
   );
 
-  const unpaid = sorted.filter(
+  const managerFiltered =
+    managerFilter === "ALL"
+      ? sorted
+      : sorted.filter((l) => l.manager === managerFilter);
+
+  const unpaid = managerFiltered.filter(
     (l) => l.status === "NEW" || l.status === "NO_CONTACT" || l.status === "CONTACTED",
   );
-  const noContact = sorted.filter((l) => l.status === "NO_CONTACT");
-  const partial = sorted.filter((l) => l.status === "PARTIALLY_PAID");
-  const paid = sorted.filter((l) => l.status === "PAID");
-  const nextCohort = sorted.filter((l) => l.status === "NEXT_COHORT");
-  const rejected = sorted.filter((l) => l.status === "REJECTED");
+  const noContact = managerFiltered.filter((l) => l.status === "NO_CONTACT");
+  const partial = managerFiltered.filter((l) => l.status === "PARTIALLY_PAID");
+  const paid = managerFiltered.filter((l) => l.status === "PAID");
+  const nextCohort = managerFiltered.filter((l) => l.status === "NEXT_COHORT");
+  const rejected = managerFiltered.filter((l) => l.status === "REJECTED");
 
-  const totalReceived = sorted.reduce(
+  const totalReceived = managerFiltered.reduce(
     (sum, l) =>
       sum +
       l.payments.reduce((s, p) => s + convert(p.amount, p.currency, "RUB"), 0),
     0,
   );
-  const totalOutstanding = sorted
+  const totalOutstanding = managerFiltered
     .filter((l) => l.status !== "REJECTED")
     .reduce((sum, l) => {
       const totalPaid = l.payments.reduce(
@@ -104,11 +111,11 @@ export function LeadsBoard({ leads }: { leads: LeadWithPayments[] }) {
               ? nextCohort
               : filter === "REJECTED"
                 ? rejected
-                : sorted;
+                : managerFiltered;
 
   const trimmedQuery = query.trim().toLowerCase();
   const visible = trimmedQuery
-    ? sorted.filter((lead) => matchesQuery(lead, trimmedQuery))
+    ? managerFiltered.filter((lead) => matchesQuery(lead, trimmedQuery))
     : byFilter;
 
   function toggle(key: FilterKey) {
@@ -125,7 +132,40 @@ export function LeadsBoard({ leads }: { leads: LeadWithPayments[] }) {
         className="w-full rounded-xl border border-black/10 bg-surface px-4 py-2.5 text-sm text-foreground shadow-sm placeholder:text-ink-muted dark:border-white/10"
       />
 
-      <UpcomingPayments leads={sorted} />
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-xs text-ink-muted">Менеджер:</span>
+        <button
+          type="button"
+          onClick={() => setManagerFilter("ALL")}
+          className={`rounded-full border px-3 py-1 text-xs font-medium ${
+            managerFilter === "ALL"
+              ? "border-accent bg-accent/15 text-accent"
+              : "border-black/10 text-ink-secondary hover:border-accent/50 dark:border-white/10"
+          }`}
+        >
+          Все
+        </button>
+        {(Object.entries(MANAGER_LABELS) as [Manager, string][]).map(
+          ([value, label]) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() =>
+                setManagerFilter((current) => (current === value ? "ALL" : value))
+              }
+              className={`rounded-full border px-3 py-1 text-xs font-medium ${
+                managerFilter === value
+                  ? "border-accent bg-accent/15 text-accent"
+                  : "border-black/10 text-ink-secondary hover:border-accent/50 dark:border-white/10"
+              }`}
+            >
+              {label}
+            </button>
+          ),
+        )}
+      </div>
+
+      <UpcomingPayments leads={managerFiltered} />
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <SummaryTile
@@ -143,7 +183,7 @@ export function LeadsBoard({ leads }: { leads: LeadWithPayments[] }) {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
         <StatTile
           label="Всего заявок"
-          value={String(sorted.length)}
+          value={String(managerFiltered.length)}
           active={filter === "ALL"}
           onClick={() => setFilter("ALL")}
         />

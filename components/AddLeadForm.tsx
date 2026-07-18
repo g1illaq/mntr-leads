@@ -1,4 +1,6 @@
 import { createLead } from "@/app/actions";
+import { MANAGER_LABELS } from "@/components/ManagerSelect";
+import type { Manager } from "@/lib/generated/prisma";
 
 const inputClass =
   "w-full rounded-md border border-black/10 bg-surface px-2.5 py-1.5 text-sm text-foreground dark:border-white/10";
@@ -44,6 +46,19 @@ export function AddLeadForm() {
         <label className={labelClass}>
           № сделки (GetCourse)
           <input name="dealNumber" className={inputClass} placeholder="864722196" />
+        </label>
+        <label className={labelClass}>
+          Менеджер
+          <select name="manager" defaultValue="" className={inputClass}>
+            <option value="">не назначен</option>
+            {(Object.entries(MANAGER_LABELS) as [Manager, string][]).map(
+              ([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ),
+            )}
+          </select>
         </label>
         <label className={`${labelClass} sm:col-span-2 lg:col-span-2`}>
           Ссылка на сделку в GetCourse
